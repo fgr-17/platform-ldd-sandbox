@@ -25,6 +25,7 @@ RUN apt-get update && \
         rsync \
         vim \
         dwarves \
+        gcc-riscv64-linux-gnu \
         && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
