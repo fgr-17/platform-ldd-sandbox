@@ -26,6 +26,10 @@ RUN apt-get update && \
         vim \
         dwarves \
         gcc-riscv64-linux-gnu \
+        g++-riscv64-linux-gnu \
+        libc6-dev-riscv64-cross \ 
+        file \
+        busybox-static \
         && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
