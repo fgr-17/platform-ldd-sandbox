@@ -1,0 +1,15 @@
+/ {
+    pdev-1 {
+        compatible = "pdev-A1x";
+        org,size = <512>;
+        org,device-serial-num = "PDEV1234";
+        org,perm = <0x11>;
+    };
+
+    pdev-2 {
+        compatible = "pdev-B1x";
+        org,size = <1024>;
+        org,device-serial-num = "PDEV4321";
+        org,perm = <0x11>;
+    };
+};
