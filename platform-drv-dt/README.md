@@ -3,32 +3,32 @@
 This example demonstrates two different modules with platform devices and drivers:
 
 * [`platform-setup`](./src/platform-setup.c): creates instances of platform devices and registers that on the platform bus
-* [`platform-drv`](./src/platform-drv.c): contains the code of the platform driver 
+* [`platform-drv`](./src/platform-drv.c): contains the code of the platform driver
 
 ## Device/driver matching on platform bus
 
-When a new device or driver is loaded into the platform bus (on driver or device table), the bus tries to match according to some criteria. In this example, driver and device are matching by .name field. 
+When a new device or driver is loaded into the platform bus (on driver or device table), the bus tries to match according to some criteria. In this example, driver and device are matching by .name field.
 
 ~~~mermaid
 graph TD
     A[platform bus]
-    
+
     subgraph device list
         B1[platform device 1 - .name=xyz]
     end
-    
+
     subgraph driver list
         C1[platform driver 1 - .name=abc]
         C2[platform driver 2 - .name=ijk]
         C3[platform driver 3 - .name=xyz]
     end
-    
+
     A --> B1
     A --> C1
-    
+
     C1 --> C2
     C2 --> C3
-    
+
     style B1 stroke:#FF0000,stroke-width:2px,fill:#FFF4E0
     style C3 stroke:#FF0000,stroke-width:2px,fill:#FFF4E0
 ~~~
@@ -103,7 +103,7 @@ platform-driver.ko  platform-drv.ko
     Then, when registering the platform devices:
 
 ~~~bash
-insmod modules/platform-setup.ko 
+insmod modules/platform-setup.ko
 [    8.627010] platform driver loaded
 [   16.137928] probe cb: Device detected
 [   16.142835] sn: PCDEV1111
@@ -123,12 +123,12 @@ insmod modules/platform-setup.ko
 2. If loading the devices first, and the driver after that:
 
 ~~~bash
-insmod modules/platform-setup.ko 
+insmod modules/platform-setup.ko
 [    7.949137] platform_setup: loading out-of-tree module taints kernel.
 [    7.956326] platform_setup: module verification failed: signature and/or required key missing - tainting kernel
 [    7.960350] platform_driver_init: Devices registered
 
-insmod modules/platform-drv.ko 
+insmod modules/platform-drv.ko
 [   15.801348] probe cb: Device detected
 ~~~
 
@@ -148,7 +148,58 @@ rmmod platform-setup
 If the driver is removed before the devices, the `remove()` callback is called as well:
 
 ~~~bash
-rmmod modules/platform-drv.ko 
+rmmod modules/platform-drv.ko
 [  724.908915] remove cb: device removed
 [  724.908942] remove cb: device removed
 ~~~
+
+## Bindings between device-tree and device driver
+
+Once that the device-tree blob binary was generated, the output file should be present in [`qemu/qemu-riscv64.dtb`](../qemu/qemu-riscv64.dtb). When linux initializes, parses this file, and, if everything is ok, the device-tree info can be checked in `/proc/device-tree`:
+
+~~~bash
+~ # ls /proc/device-tree/
+#address-cells         fw-cfg@10100000/       pmu/
+#size-cells            memory@80000000/       poweroff/
+aliases/               model                  reboot/
+chosen/                name                   reserved-memory/
+compatible             pdev-1/                soc/
+cpus/                  pdev-2/
+flash@20000000/        platform-bus@4000000/
+~~~
+
+Check the new devices we added in [`qemu/qemu-riscv64-pdev.dtsi`](../qemu/qemu-riscv64-pdev.dtsi):
+
+~~~C
+/ {
+    pdev-1 {
+        compatible = "pdev-A1x";
+        org,size = <512>;
+        org,device-serial-num = "PDEV1234";
+        org,perm = <0x11>;
+    };
+
+    pdev-2 {
+        compatible = "pdev-B1x";
+        org,size = <1024>;
+        org,device-serial-num = "PDEV4321";
+        org,perm = <0x11>;
+    };
+};
+~~~
+
+This info is present in the linux filesystem in `/proc/device-tree/pdev-*`, for example:
+
+~~~bash
+~ # ls /proc/device-tree/pdev-1/
+compatible             org,device-serial-num  org,size
+name                   org,perm
+~~~
+
+Those files contain the info described in the `.dtsi` file:
+
+~~~bash
+~ # cat /proc/device-tree/pdev-1/compatible
+pdev-A1x
+~~~
+
