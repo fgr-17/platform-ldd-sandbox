@@ -1,15 +1,18 @@
+// All the modules are enabled by default
 / {
-    pdev-1 {
+    pcdev1: pdev-1 {
         compatible = "pdev-A1x";
         org,size = <512>;
         org,device-serial-num = "PDEV1234";
         org,perm = <0x11>;
+        status = "disabled";
     };
 
-    pdev-2 {
+    pcdev2: pdev-2 {
         compatible = "pdev-B1x";
         org,size = <1024>;
         org,device-serial-num = "PDEV4321";
         org,perm = <0x11>;
+        status = "okay";
     };
 };

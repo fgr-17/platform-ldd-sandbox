@@ -32,6 +32,14 @@ extract_patched_dtb() {
 
 
 run_qemu_with_dtb() {
+
+    if [[ -f "${DEVICETREE_PATH}-merged.dtb" ]]; then
+        DTB_FILE="${DEVICETREE_PATH}-merged.dtb"
+        echo "Using merged DTB: ${DTB_FILE}"
+    else
+        DTB_FILE="${DEVICETREE_PATH}.dtb"
+        echo "Using base DTB: ${DTB_FILE}"
+    fi
     # run qemu with the extracted DTB file
     qemu-system-riscv64 \
     -machine virt \
@@ -41,7 +49,7 @@ run_qemu_with_dtb() {
     -kernel ${LINUX_KERNEL_IMAGE_PATH} \
     -initrd ${INITRAMFS_PATH} \
     -append "console=ttyS0 earlycon=sbi" \
-    -dtb ${DEVICETREE_PATH}.dtb
+    -dtb ${DTB_FILE}
 }
 
 case "${1:-}" in
@@ -54,12 +62,14 @@ case "${1:-}" in
     "run")
         echo "Building prerequisites..."
         ./build-busybox.sh
+        ./compile-dts.sh
         ./gen-initramfs.sh
         run_qemu_with_dtb
         ;;
     "all")
         echo "Building prerequisites..."
         ./build-busybox.sh
+        ./compile-dts.sh
         ./gen-initramfs.sh
         extract_patched_dtb
         run_qemu_with_dtb

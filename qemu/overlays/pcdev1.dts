@@ -1,0 +1,17 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    fragment@0 {
+        target = <&pcdev1>;
+        __overlay__ {
+            status = "okay";
+        };
+    };
+    fragment@1 {
+        target = <&pcdev2>;
+        __overlay__ {
+            org,device-serial-num = "PDEV4322";
+        };
+    };
+};
