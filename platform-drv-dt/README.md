@@ -74,7 +74,7 @@ struct platform_driver {
 ### 1. Build the two modules
 
 ~~~bash
-docker exec -it ldd-sandbox bash
+docker exec -it platform-ldd-sandbox bash
 cd 10-platform-driver
 make
 ~~~
@@ -203,3 +203,11 @@ Those files contain the info described in the `.dtsi` file:
 pdev-A1x
 ~~~
 
+## Devicetree Overlay files
+
+There's only one overlay file in `platform-ldd-sandbox/qemu/overlays/pcdev1.dts` that has 2 fragments, modifying some properties of the existing devices. 
+
+The script [`compile-overlay-dts`](../scripts/compile-overlay-dts.sh) executes 2 different things:
+
+* compiles the dt overlay file called [`pcdev1.dts`](../platform-ldd-sandbox/qemu/overlays/pcdev1.dts), that generates a pcdev1.dtbo file. That file alone cannot do much, you need to integrate it into the general dtb file
+* so then, it runs `ftdoverlay` tool to do that, and generates a merged file called `qemu-riscv64-merged.dtb`. Then when you run `launch-qemu.sh run`, if a `*-merged` file exists, will use that instead of the non overlayed dtb

@@ -91,7 +91,7 @@ First time will take several minutes, at least on my old PC. This kernel image s
 Once inside the container, goto the dir just run `make`
 
 ~~~bash
-cd /workspace/platform-ldd-sandbox
+cd /workspace/platform-drv-dt
 make
 ~~~
 
@@ -112,7 +112,7 @@ make[1]: Leaving directory '/workspace/linux'
 
 If the driver was correctly build, you should see `platform-drv-dt/platform-drv-dt.ko`. That's what we need to play with.
 
-**Note:** this [`Makefile`](./platform-drv-dt/Makefile) is not using gcc or any known compiler at all, but the `kbuild` linux system to build the module. If not familiar with that flow, you can check this other repo that explains better: [`ldd-sandbox`](https://github.com/fgr-17/ldd-sandbox)
+**Note:** this [`Makefile`](./platform-drv-dt/Makefile) is not using gcc or other known compiler at all, but the `kbuild` linux system to build the module. If not familiar with that flow, you can check this other repo that explains better: [`ldd-sandbox`](https://github.com/fgr-17/ldd-sandbox)
 
 For more specific info about the driver itself, please refer to [`/platform-drv-dt/README.md`](./platform-drv-dt/README.md)
 
