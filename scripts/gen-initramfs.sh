@@ -4,7 +4,10 @@ BASE_DIR="/workspace"
 BUSYBOX_RISCV_PATH="/tmp/busybox-1.36.1/busybox"
 BUILD_DIR="${BASE_DIR}/qemu/build"
 INITRAMFS_PATH="${BUILD_DIR}/initramfs"
-MODULES_SEARCH_PATH=${BASE_DIR}/platform-drv-dt
+MODULES_SEARCH_PATH=(
+    "${BASE_DIR}/platform-drv-dt"
+    "${BASE_DIR}/platform-drv-dt-sysfs"
+)
 
 mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
 rm -f rootfs.cpio
@@ -15,7 +18,7 @@ cp ${BUSYBOX_RISCV_PATH} initramfs/bin/
 (cd initramfs/bin && ln -sf busybox sh)
 
 echo "Including built modules..."
-find ${MODULES_SEARCH_PATH} -name "*.ko" -exec cp {} ${INITRAMFS_PATH}/modules/ \; 2>/dev/null
+find ${MODULES_SEARCH_PATH[@]} -name "*.ko" -exec cp {} ${INITRAMFS_PATH}/modules/ \; 2>/dev/null
 MODULE_COUNT=$(ls ${INITRAMFS_PATH}/modules/*.ko 2>/dev/null | wc -l)
 echo "Found $MODULE_COUNT module(s)"
 
