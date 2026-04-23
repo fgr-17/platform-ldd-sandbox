@@ -1,0 +1,29 @@
+// Place custom test device on QEMU platform-bus so it is instantiated.
+&{/platform-bus@4000000} {
+    bone_gpio_devs@0 {
+        compatible = "org,bone-gpio-sysfs";
+        reg = <0x0 0x1000>;
+        status = "okay";
+
+        gpio1 {
+            label = "gpio-1";
+            bone-gpios = <&sandbox_gpio 0 0>;
+        };
+        gpio2 {
+            label = "gpio-2";
+            bone-gpios = <&sandbox_gpio 1 0>;
+        };
+        gpio3 {
+            label = "gpio-3";
+            bone-gpios = <&sandbox_gpio 2 0>;
+        };
+        gpio4 {
+            label = "user-led0";
+            bone-gpios = <&sandbox_gpio 3 0>;
+        };
+        gpio5 {
+            label = "user-led1";
+            bone-gpios = <&sandbox_gpio 4 0>;
+        };
+    };
+};

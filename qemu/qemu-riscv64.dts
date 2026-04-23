@@ -3,6 +3,7 @@
 
 /include/ "qemu-riscv64-pdev.dtsi"
 
+
 / {
 	#address-cells = <0x02>;
 	#size-cells = <0x02>;
@@ -55,7 +56,7 @@
 			riscv,isa = "rv64imafdch_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicntr_zicsr_zifencei_zihintntl_zihintpause_zihpm_zmmul_za64rs_zaamo_zalrsc_zawrs_zfa_zca_zcd_zba_zbb_zbc_zbs_shcounterenw_shgatpa_shtvala_shvsatpa_shvstvala_shvstvecd_ssccptr_sscounterenw_sstc_sstvala_sstvecd_ssu64xl_svadu_svvptc";
 			mmu-type = "riscv,sv57";
 
-			interrupt-controller {
+			cpu0_intc: interrupt-controller {
 				#interrupt-cells = <0x01>;
 				interrupt-controller;
 				compatible = "riscv,cpu-intc";
@@ -186,11 +187,11 @@
 			compatible = "virtio,mmio";
 		};
 
-		plic@c000000 {
+		plic0: plic@c000000 {
 			phandle = <0x03>;
 			riscv,ndev = <0x5f>;
 			reg = <0x00 0xc000000 0x00 0x600000>;
-			interrupts-extended = <0x02 0x0b 0x02 0x09>;
+			interrupts-extended = <&cpu0_intc 0x0b &cpu0_intc 0x09>;
 			interrupt-controller;
 			compatible = "sifive,plic-1.0.0\0riscv,plic0";
 			#address-cells = <0x00>;
@@ -198,7 +199,7 @@
 		};
 
 		clint@2000000 {
-			interrupts-extended = <0x02 0x03 0x02 0x07>;
+			interrupts-extended = <&cpu0_intc 0x03 &cpu0_intc 0x07>;
 			reg = <0x00 0x2000000 0x00 0x10000>;
 			compatible = "sifive,clint0\0riscv,clint0";
 		};
@@ -219,3 +220,6 @@
 		};
 	};
 };
+
+/include/ "qemu-riscv64-gpio.dtsi"
+/include/ "qemu-riscv64-fake-gpio.dtsi"

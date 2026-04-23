@@ -1,0 +1,19 @@
+/*
+ * Sandbox-only GPIO controller: MMIO window after last virtio_mmio block
+ * (virtio ends at 0x10008fff; this starts at 0x10009000).
+ *
+ * No QEMU device backs this region; it is for DT phandle exercises. You need
+ * a small platform driver with compatible "org,sandbox-fake-gpio" that
+ * registers a gpio_chip (or use gpio-sim / lookup tables instead).
+ */
+
+&{/soc} {
+	sandbox_gpio: gpio@10009000 {
+		compatible = "org,sandbox-fake-gpio";
+		reg = <0x00 0x10009000 0x00 0x1000>;
+		gpio-controller;
+		#gpio-cells = <0x02>;
+		ngpios = <0x08>;
+		status = "okay";
+	};
+};
