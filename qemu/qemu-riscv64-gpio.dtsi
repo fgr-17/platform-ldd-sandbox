@@ -1,4 +1,3 @@
-// Place custom test device on QEMU platform-bus so it is instantiated.
 &{/platform-bus@4000000} {
     bone_gpio_devs@0 {
         compatible = "org,bone-gpio-sysfs";
