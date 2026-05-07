@@ -3,6 +3,14 @@ LINUX_DIR=/workspace/linux
 
 cd $LINUX_DIR
 make ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- defconfig
+
+./scripts/config \
+    --enable GPIOLIB \
+    --enable GPIO_CDEV \
+    --enable CONFIGFS_FS \
+    --enable GPIO_SIM
+make ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- olddefconfig
+
 make ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- -j$(nproc)
 
 # cd $LINUX_DIR/arch/riscv/boot/dts

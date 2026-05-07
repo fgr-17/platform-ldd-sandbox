@@ -167,6 +167,37 @@ To exit: Ctrl+A then X
 ~ #
 ~~~
 
+### Testing GPIO consumers with `gpio-sim` (QEMU, no real hardware)
+
+If your module uses GPIO descriptors (`gpiod_*`) and you want to test it in this QEMU sandbox, use kernel `gpio-sim` to create virtual GPIO chips at runtime.
+
+1. Build kernel and launch QEMU as usual:
+
+~~~bash
+cd /workspace/scripts
+./build-linux-kernel.sh
+./launch-qemu.sh run
+~~~
+
+2. Inside the QEMU shell, create one simulated gpiochip (8 lines by default):
+
+~~~bash
+setup-gpio-sim
+~~~
+
+You can also customize chip name, bank, number of lines, and label:
+
+~~~bash
+setup-gpio-sim chipA bankA 16 my-gpio-bank
+~~~
+
+3. Verify the virtual chip exists:
+
+~~~bash
+ls /dev/gpiochip*
+cat /sys/kernel/config/gpio-sim/chip0/bank0/chip_name
+~~~
+
 Let's dig a little bit into the `initrd` and `dtb` args:
 
 #### Building the initramfs

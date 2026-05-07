@@ -7,6 +7,7 @@ INITRAMFS_PATH="${BUILD_DIR}/initramfs"
 MODULES_SEARCH_PATH=(
     "${BASE_DIR}/platform-drv-dt"
     "${BASE_DIR}/platform-drv-dt-sysfs"
+    "${BASE_DIR}/gpio-sysfs"
 )
 
 mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
@@ -16,6 +17,11 @@ mkdir -p initramfs/{bin,sbin,etc,proc,sys,usr/bin,usr/sbin,modules}
 
 cp ${BUSYBOX_RISCV_PATH} initramfs/bin/
 (cd initramfs/bin && ln -sf busybox sh)
+
+if [ -f "${BASE_DIR}/scripts/setup-gpio-sim.sh" ]; then
+    cp "${BASE_DIR}/scripts/setup-gpio-sim.sh" initramfs/usr/bin/setup-gpio-sim
+    chmod +x initramfs/usr/bin/setup-gpio-sim
+fi
 
 echo "Including built modules..."
 find ${MODULES_SEARCH_PATH[@]} -name "*.ko" -exec cp {} ${INITRAMFS_PATH}/modules/ \; 2>/dev/null
@@ -36,6 +42,11 @@ echo "========================================"
 echo ""
 echo "To exit: Ctrl+A then X"
 echo ""
+
+# Auto-create a gpio-sim chip so GPIO consumer modules can probe immediately.
+if [ -x /usr/bin/setup-gpio-sim ]; then
+    /usr/bin/setup-gpio-sim chip0 bank0 8 sandbox-gpio || echo "setup-gpio-sim failed"
+fi
 
 exec /bin/sh
 EOF
