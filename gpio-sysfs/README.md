@@ -16,11 +16,87 @@ flowchart TB
 ```mermaid
 flowchart LR
     DT[Device Tree node<br/>bone_gpio_devs@0] --> PDRV[Platform bus match]
-    PDRV --> PROBE[gpio_sysfs_probe()]
+    PDRV --> PROBE["gpio_sysfs_probe()"]
     PROBE --> LOOKUP[gpiod lookup table<br/>dev_id + con_id + index]
-    LOOKUP --> CHIP[sandbox-gpio (gpio-sim)]
-    CHIP --> CLASS[/sys/class/bone_gpio/*]
+    LOOKUP --> CHIP["sandbox-gpio (gpio-sim)"]
+    CHIP --> CLASS["/sys/class/bone_gpio/*"]
 ```
+
+## Linux GPIO subsystem (reference diagram)
+
+This section documents the usual Linux GPIO stack: **user space** (sysfs and related classes), **kernel** (consumer drivers, **`gpiolib`**, controller drivers that register **`gpio_chip`**), and **hardware** (GPIO controllers and pads).
+
+### Static diagram
+
+![Linux GPIO subsystem overview](img/linux-gpio-subsystem.png)
+
+Store **`linux-gpio-subsystem.png`** next to this README under **`gpio-sysfs/img/`** so the path above resolves in checkout and documentation builds.
+
+### Layered flowchart
+
+The flowchart uses the same vertical split. **User space** lists representative sysfs locations. **Kernel space** groups GPIO consumers (including **`gpiolib-sysfs`** for legacy **`/sys/class/gpio`**) above **`gpiolib`**, and shows producers as a **GPIO controller driver** registering a **`gpio_chip`** into **`gpiolib`**. **Hardware** is the GPIO controller block (MMIO or pad logic).
+
+```mermaid
+flowchart TB
+    subgraph USER_LAYER["User space (top)"]
+        direction LR
+        U_GPIO["/sys/class/gpio/gpioN<br/>(legacy sysfs)"]
+        U_LEDS["/sys/class/leds"]
+        U_INPUT["/sys/class/input"]
+        U_GPIO ~~~ U_LEDS
+        U_LEDS ~~~ U_INPUT
+    end
+
+    subgraph KERNEL_LAYER["Kernel space (middle)"]
+        direction TB
+        subgraph KERNEL_UPPER["Consumers + sysfs bridge"]
+            direction LR
+            KEYS["GPIO keys<br/>gpio-keys.c"]
+            LED["GPIO LED driver<br/>leds-gpio.c"]
+            DRV["Generic consumers<br/>foo / keypad …"]
+            GL_SYSFS["gpiolib-sysfs<br/>gpiolib-sysfs.c"]
+        end
+        subgraph KERNEL_PRODUCERS["Producers"]
+            direction LR
+            CTL["GPIO controller driver<br/>e.g. gpio-omap.c"]
+            CHIP["gpio_chip"]
+        end
+        GL["gpiolib<br/>gpiolib.c"]
+
+        KEYS --> GL
+        LED --> GL
+        DRV --> GL
+        GL_SYSFS --> GL
+        CTL --> CHIP
+        CHIP -->|register gpio_chip| GL
+    end
+
+    subgraph HW_LAYER["Hardware (bottom)"]
+        SOC["GPIO controllers<br/>MMIO / pads"]
+    end
+
+    USER_LAYER --> KERNEL_LAYER --> HW_LAYER
+```
+
+In operation, the **GPIO controller driver** talks to **GPIO controllers** (MMIO registers or pad logic). It exposes lines by registering a **`gpio_chip`** with **`gpiolib`**. **Consumer** drivers and **`gpiolib-sysfs`** obtain and manipulate lines through **`gpiolib`**; the kernel publishes sysfs nodes under **`/sys/class/...`** so user space can observe or control those subsystems.
+
+Representative sysfs links:
+
+- **`/sys/class/gpio/gpioN`** (legacy GPIO sysfs) ↔ **`gpiolib-sysfs`**
+- **`/sys/class/leds`** ↔ **`leds-gpio`**
+- **`/sys/class/input`** ↔ **`gpio-keys`**
+
+### Scope
+
+The picture is an architectural overview, not an exhaustive kernel map. **`gpiolib`** remains the hub through which **`gpio_chip`** providers and **`gpiod_*`** consumers meet. **`/sys/class/gpio`** with **`gpiolib-sysfs`** is the legacy sysfs GPIO ABI; **`/dev/gpiochipN`** with **`libgpiod`** is the preferred interface for new userspace code. LED and input classes appear when **`leds-gpio`**, **`gpio-keys`**, or similar drivers consume GPIO through **`gpiolib`**. Facilities such as **`gpio-sim`** or **`gpiod`** lookup tables are not drawn; they still follow the same pattern (a **`gpio_chip`** backs lines that consumers resolve at runtime or through descriptors).
+
+### Relation to this module
+
+| Concept in the diagram | Role in this repository |
+|------------------------|-------------------------|
+| Provider (**`gpio_chip`**) | **`gpio-sim`** registers a virtual chip (`sandbox-gpio`) with simulated lines. |
+| Consumer driver | **`gpio-sysfs.ko`** requests lines with **`devm_gpiod_get_index()`**, steered by an in-module **`gpiod`** lookup table to **`sandbox-gpio`**. |
+| User space | **`/sys/class/bone_gpio/*`** exposes custom attributes (**`direction`**, **`value`**, **`label`**); this is a teaching sysfs surface, not the kernel’s legacy **`/sys/class/gpio`** ABI. |
 
 ## What this example demonstrates
 
