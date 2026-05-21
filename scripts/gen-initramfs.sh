@@ -7,6 +7,7 @@ INITRAMFS_PATH="${BUILD_DIR}/initramfs"
 MODULES_SEARCH_PATH=(
     "${BASE_DIR}/platform-drv-dt"
     "${BASE_DIR}/platform-drv-dt-sysfs"
+    "${BASE_DIR}/platform-drv-dt-lock"
     "${BASE_DIR}/gpio-sysfs"
 )
 
